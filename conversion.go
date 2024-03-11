@@ -9,6 +9,15 @@ import(
 )
 
 const barSeparator = "|"
+const rest = " - "
+var orderStrings = [...]string{
+	"e",
+	"B",
+	"G",
+	"D",
+	"A",
+	"E",
+}
 
 type pianoNote struct {
 	value int
@@ -74,7 +83,7 @@ func (g guitar) ToPianoNotes (guitarString string, fret int) string {
 	guitarStringToPiano, ok := g.guitarStrings[guitarString]
 	if !ok {
 		fmt.Println("ERROR: Guitar string not recognized: ", guitarString)
-		return " - "
+		return rest
 	}
 	return guitarStringToPiano.GetString(g.capo+fret)
 }
@@ -93,19 +102,19 @@ func (tabs *GuitarTabs) noteSequencer(guitarString, notesInputOnString string) {
 		switch note := string(notesInputOnString[i]); note {
 		case "-":
 			// rest
-			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], " - ")
+			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
 		case "x":
 			// mute --> for now playing as rest
-			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], " - ")
+			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
 		case "h":
 			// hammer ---> assume 1/8th of the previous note duration
-			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], " - ")
+			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
 		default:
 			fret, err := strconv.Atoi(note)
 			if err != nil {
 				fmt.Println("not an int, what is this: ", note)
 				// when in doubt, rest
-				tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], " - ")
+				tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
 				continue
 			}
 			pianoNote := tabs.conversion.ToPianoNotes(guitarString, fret)
@@ -124,17 +133,18 @@ func (tabs GuitarTabs) GetPiano(breakAt int) string {
 
 	for ; !loopedThroughAllNotes ; {
 		endAt := startFrom + breakAt
-		for _, stringEquivalent := range tabs.tabsOnStrings{
+		for _, stringId := range orderStrings {
+			output = output + tabs.conversion.ToPianoNotes(stringId, 0) + barSeparator
 			for i := startFrom; i<endAt; i++ {
 				if noteLength - i <= 0 {
 					loopedThroughAllNotes = true
 					// rest it
-					output = output + " - "
+					output = output + rest
 					continue
 				}
-				output = output + stringEquivalent[i]
+				output = output + tabs.tabsOnStrings[stringId][i]
 			}
-			output = output + "\n"
+			output = output + "|\n"
 		}
 		startFrom = endAt
 		output = output + "\n"
