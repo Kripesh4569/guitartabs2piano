@@ -10,6 +10,7 @@ import(
 
 const barSeparator = "|"
 const rest = " - "
+const mute = " x "
 var orderStrings = [...]string{
 	"e",
 	"B",
@@ -104,8 +105,8 @@ func (tabs *GuitarTabs) noteSequencer(guitarString, notesInputOnString string) {
 			// rest
 			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
 		case "x":
-			// mute --> for now playing as rest
-			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
+			// mute
+			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], mute)
 		case "h":
 			// hammer ---> assume 1/8th of the previous note duration
 			tabs.tabsOnStrings[guitarString] = append(tabs.tabsOnStrings[guitarString], rest)
@@ -124,6 +125,7 @@ func (tabs *GuitarTabs) noteSequencer(guitarString, notesInputOnString string) {
 }
 
 // Assumes that on the input, the notes on each strings were equal
+// breakAt is the the number of notes to read from each line (eg:Count of chars between e|{breakAt}|)
 func (tabs GuitarTabs) GetPiano(breakAt int) string {
 	var output string
 	startFrom := 0
@@ -157,12 +159,12 @@ func NewGuitarTabs(rawTabsFileLocation string) (*GuitarTabs, error) {
 	tabs := &GuitarTabs{
 		conversion: NewGuitar(0),
 		tabsOnStrings: map[string][]string{
-			"e": []string{},
-			"B": []string{},
-			"G": []string{},
-			"D": []string{},
-			"A": []string{},
-			"E": []string{},
+			"e": {},
+			"B": {},
+			"G": {},
+			"D": {},
+			"A": {},
+			"E": {},
 		},
 	}
 	inFile, err := os.Open(rawTabsFileLocation)
